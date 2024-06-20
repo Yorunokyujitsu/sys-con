@@ -1,7 +1,7 @@
 TARGETS := AppletCompanion Sysmodule/source/version.h Sysmodule
 TOPTARGETS := all clean mrproper
 
-ATMOSPHERE_GIT_HASH := $(shell git -C ../lib/Atmosphere-libs rev-parse --short HEAD)
+ATMOSPHERE_GIT_HASH := $(shell git -C ../../../../Atmosphere/libraries rev-parse --short HEAD)
 SYSCON_GIT_HASH := $(shell git rev-parse --short HEAD)
 SYSCON_GIT_TAG := $(shell git describe --tags `git rev-list --tags --max-count=1`)
 SYSCON_GIT_TAG_COMMIT_COUNT := $(shell git rev-list  `git rev-list --tags --no-walk --max-count=1`..HEAD --count)
@@ -11,7 +11,7 @@ SYSCON_GIT_TAG_COMMIT_COUNT := $(shell git rev-list  `git rev-list --tags --no-w
 all: $(TARGETS)
 
 libstratosphere:
-	$(MAKE) -C ../lib/Atmosphere-libs/libstratosphere -j8
+	$(MAKE) -C ../../../../Atmosphere/libraries/libstratosphere -j8
 	
 libhiddatainterpreter:
 	$(MAKE) -C ../lib/HIDDataInterpreter/build/switch
@@ -37,5 +37,5 @@ clean:
 	$(MAKE) -C Sysmodule clean
 	
 mrproper: clean
-	$(MAKE) -C ../lib/Atmosphere-libs/libstratosphere clean
+	$(MAKE) -C ../../../../Atmosphere/libraries/libstratosphere clean
 	$(MAKE) -C ../lib/HIDDataInterpreter/build/switch clean

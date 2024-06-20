@@ -4,7 +4,7 @@
 THIS_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIRECTORY := $(abspath $(dir $(THIS_MAKEFILE)))
 
-include $(CURRENT_DIRECTORY)/../../lib/Atmosphere-libs/config/templates/stratosphere.mk
+include $(CURRENT_DIRECTORY)/../../../../../Atmosphere/libraries/config/templates/stratosphere.mk
 include $(CURRENT_DIRECTORY)/../../lib/HIDDataInterpreter/build/switch/libhiddatainterpreter.mk
 
 TARGET		:=	sys-con
