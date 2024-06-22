@@ -18,5 +18,5 @@ public:
 
     virtual uint16_t GetInputCount() override;
 
-    virtual ams::Result ReadInput(RawInputData *rawData, uint16_t *input_idx) override;
+    virtual ams::Result ReadInput(RawInputData *rawData, uint16_t *input_idx, uint32_t timeout_us) override;
 };

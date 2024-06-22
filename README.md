@@ -1,34 +1,29 @@
-# sys-con
+# Sys-con
 
-#### A Nintendo Switch custom sysmodule for third-party controller support. 
-
-#### No man-in-the-middle required, No specific hardware required !
+#### Connect any USB controller to your Nintendo Switch ! 
+***Support any controller***: PC controllers, Wheels, Dualshock 3, Dualshock 4, Dualsense (PS5), XBOX, XBOX360, XBOXONE, ...
 
 ## Description
-This sys-module adds support for any joystick or gamepad to the Nintendo Switch.
-Only USB connection is supported - For Bluetooth connection you can use ndeadly's [MissionControl] (https://github.com/ndeadly/MissionControl)
-
-## What is new in this fork
-This fork adds support for all HID game controllers. This means that any PC-compatible USB controller should work with your Nintendo Switch. While the original sys-con only supports Xbox/PS controllers, this one adds support for all other PC controllers.
-
-**Important note**: This fork has not been integrated with the original, as it is far from the original source code. Most of the code has been rewritten and the configuration has been completely rethought. This means that if you already have a configuration from the original sys-con, you will have to drop it and redo it on this new fork, but it should be fairly straightforward ;).
+Sys-con is a Nintendo Switch module that adds support for all HID and XID joysticks and gamepads to the Nintendo Switch.
+Only **USB** connection is supported (For Bluetooth connection prefer to use ndeadly's [MissionControl](https://github.com/ndeadly/MissionControl))
 
 ## Installation
 Download the latest zip from the [releases page](https://github.com/o0zz/sys-con/releases). Extract it to your SD card and boot/reboot your switch.
 
 ## Configuration
-sys-con comes with a config folder located at `/config/sys-con/`. It contains options for adjusting the stick/trigger deadzone and input remapping. 
+sys-con comes with a configuration folder located in `/config/sys-con/`. It contains configuration for controllers (Button mappings, sticks configuration, triggers configuration, deadzones...).
+
 The configuration is loaded in the following way:
-- The [global] section is only loaded once, when the switch boots, so if you want to apply a setting, you have to reboot the switch.
+- The `[global]` section is only loaded once, when the switch boots, so if you want to apply a setting, you have to reboot the switch.
 - Other sections are for controller configuration, they are loaded each time you plug a controller, so if you want to apply a setting you will have to unplug and then replug your controller to apply it.
 
-Load controller mapping order:
-- First load the [default] section
-- Then it will try to find a [VID-PID] section, if found it will override the default value.
-- If [VID-PID] contains a [profile], it will first load the [profile] then load [VID-PID].
+When a new controller is plugged, the configuration is loaded in below order
+1. First it load the `[default]` section
+2. Then it will load the `[VID-PID]` section
+3. If `[VID-PID]` contains a `[profile]`, it will load the `[profile]` then load `[VID-PID]`.
 
-In other words, the loading order is: [Default] [Profile] [VID-PID].
-If you want to override a setting for only 1 controller, it is better to write down your configuration in [VID-PID].
+In other words, the loading order is: `[Default]` `[Profile]` `[VID-PID]`.
+If you want to override a setting for only 1 controller, it's adviced to change the configuration in `[VID-PID]` in order to not impact others controllers
 
 ## Logs
 In case of issue, you can look at the logs in `/config/sys-con/log.log` (On your SDCard).
@@ -42,14 +37,13 @@ log_level=0
 
 Reboot the Nintendo Switch.
 
-**Important note**: If you enable the trace or debug log level, the sys-module will automatically increase the polling frequency to 100ms (for debug) and 500ms (for trace). 
-This will add a lot of latency to your controller (this isn't a problem and is expected).
-So if you want to press a button, you have to hold it down for 1 second.
-These log levels (trace and debug) cannot be used to play a game, they are for debugging purposes only.
+**Important note**: If you enable the trace(`log_level=0`) or debug(`log_level=1`) log level, sys-con will automatically increase the polling frequency to 100ms (for debug) and 500ms (for trace). This will add a lot of latency to your controller (this isn't a problem and is expected). So, if you want to press a button, you have to hold it down for 1 second. These log levels (trace and debug) cannot be used to play a game, they are for debugging purposes only.
 
 ## Features
-- [x] HID joystick/gamepad supported (PC Controller compatible)
-- [x] Key mapping using VID/PID or profile
+- [x] HID joystick/gamepad/wheels supported (PC Controller compatible)
+- [x] PS and XBOXs controllers supported
+- [x] Custom key mapping using VID/PID and profile.
+- [x] Automatically add new controllers (Try to determine the best driver)
 - [x] Configurable deadzone
 - [x] Configurable polling frequency
 - [x] Configurable controller color using #RGBA
@@ -59,40 +53,55 @@ These log levels (trace and debug) cannot be used to play a game, they are for d
 - [x] All PC Controllers
 - [x] Dualshock 4
 - [x] Dualshock 3
+- [x] Dualsense (PS5)
 - [x] Xbox Original
 - [x] Xbox 360 Controller
 - [x] Xbox 360 Wireless adapter (Up to 4 controller can be connected)
 - [x] Xbox One X/S Controller
 - [x] Wheels
 
-## Controller tested
-- [x] Xinmotek XM-10 (Arcade controller)
-- [x] PSX Adapter
-- [x] Dualshock 4
-- [x] Xbox 360 Controller
-- [x] Xbox 360 Wireless adapter
-- [x] Logitech Driving Force GT (Wheel)
-- [x] Trustmaster T150 Pro (Wheel)
-- [x] BSP-D9 Mobile Phone Stretch Game Controller 
-- [x] Phantom White PDP Xbox One
-- [x] Wave Afterglow PDP Xbox Series
-- [x] Activbb X6-34U
+## Configure a controller
+When a new controller is connected, sys-con tries to determine the best profile for this new controller.
+In most cases the arrows and joystick will work fine, the buttons may not be mapped correctly by default (and in rare cases the right stick may be reversed). If this is the case, you will need to map the buttons yourself using the procedure below:
 
-## How to add a new controller ?
-As soon as a new controller is plugged, sys-con try to determine the best profile to fit your new controller.
-Most of the time arrows and joystick will works properly, the buttons might not be properly mapped by default (And in rare cases right stick might be reversed).
-If this happen, you will have to map your buttons yourself, follow below method.
+### Method 1 (Directly from the switch)
 
-### Method 1 (From a windows PC)
+1. Connect your controller to the switch
+2. On the switch, go to Settings -> Controllers & Sensors > Test Input Devices
+3. Press the button and try to understand the correct mapping.
+3. On your SDCard, edit `/config/sys-con/config.ini` and find your controller `[vid-pid]` section (most likely the latest one).
+Note: A new section will be created automatically if the controller is not known to sys-con. This means that the new controller is most likely the latest one. 
 
+Typical configuration will look like
+```
+[0810-0001]
+B=1
+A=2
+Y=3
+X=4
+L=5
+R=6
+ZL=7
+ZR=8
+minus=9
+plus=10
+home=11
+capture=12
+right_stick_x=Z
+right_stick_y=Rz
+``` 
+Where A, B, Y, X ... need to be set to a button id ( 1,2,3,4,5 ..)
+
+### Method 2 (From a windows PC)
 1. Connect your controller to your PC
-2. Go to "Control Panel" > "Device Manager" and find your USB device under "Human Interface Devices".
-3. Double click the device or right click and select Properties.
-4. Go to the "Details" tab and select "Hardware IDs" to view its PID and VID. The PID/VID should look like "HID\VID_0810&PID_0001&...", that will become: `[0810-0001]`
-5. Open "joy.cpl" (Either from Win+R or directly in Start Menu) 
-6. Select your controller and click "Properties"
-7. Here you should see a panel with button ID (1, 2, 3 ...), press the button and note them (Which button is associated to which ID).
-8. Now Edit /config/sys-con/config.ini on your switch sdcard and edit your controller vid-pid section:
+2. Go to 'Control Panel' > 'Device Manager' and find your USB device under 'Human Interface Devices'.
+3. Double click on the device or right click and select Properties.
+4. Go to the 'Details' tab and select 'Hardware IDs' to view its PID and VID. The PID/VID should look like "HID\VID_0810&PID_0001&...", which becomes: `[0810-0001]`.
+5. Open "joy.cpl" (either from Win+R or directly from the Start menu). 
+6. Select your controller and click on "Properties
+7. Here you should see a panel with button IDs (1, 2, 3 ...), press the button and make a note of them (which button is assigned to which ID).
+8. Now edit `/config/sys-con/config.ini` on your switch sdcard and edit your controller's vid-pid section:
+
 ```
 [0810-0001]
 B=3
@@ -111,38 +120,13 @@ right_stick_x=Z
 right_stick_y=Rz
 ```
 Where 1, 2, 3, 4, ... is the key ID noted in step 7.
-
-Note: Depending to the controller, this windows procedure might not works. If the mapping is incorrect, please switch to Method 2.
-
-### Method 2 (Directly from the switch logs)
-
-1. Connect your controller to your switch
-2. Go to: Settings -> Controllers & Sensors > Test Input Devices
-3. Press button and try to understand the correct mapping.
-3. Edit /config/sys-con/config.ini on your switch sdcard and edit your controller vid-pid section:
-```
-[0810-0001]
-B=1
-A=2
-Y=3
-X=4
-L=5
-R=6
-ZL=7
-ZR=8
-minus=9
-plus=10
-home=11
-capture=12
-right_stick_x=Z
-right_stick_y=Rz
-``` 
+Note: Depending to the controller, this windows procedure might not works. If the mapping is incorrect, switch to Method 1
 
 ## Troubleshooting
 For common issues a troubleshooting guide is available: https://github.com/o0Zz/sys-con/blob/master/doc/Troubleshooting.md
 
 ## Contribution
-All contributions are welcome, you can be a simple user or developer, if you did some mapping work in the config.ini or if you have any feedback or want a new feature, feel free to share it in [Discussions](https://github.com/o0Zz/sys-con/discussions) or submit a [Pull request](https://github.com/o0Zz/sys-con/pulls)
+All contributions are welcome, you can be a simple user or developer, if you did some mapping work in the config.ini or if you have any feedback, feel free to share it in [Discussions](https://github.com/o0Zz/sys-con/discussions) or submit a [Pull request](https://github.com/o0Zz/sys-con/pulls)
 
 ## Building (For developers)
 
@@ -153,7 +137,7 @@ Like all other switch projects, you will need [devkitA64](https://switchbrew.org
 (Direct link for windows https://github.com/devkitPro/installer/releases/tag/v3.0.3)
 
 ### Install dependencies
-Open MSYS2 console from devkitA64 and type below commands
+Open MSYS2 console from devkitA64 and type below commands:
 ```
 pacman -S switch-libjpeg-turbo
 make -C lib/libnx install
@@ -164,16 +148,14 @@ If you have **Visual Studio Code**, you can open the project as a folder and run
 It also has Intellisense configured for switch development, if you have DEVKITPRO correctly defined in your environment variables.
 
 Otherwise, you can open the console inside the project directory and use one of the following commands:
-- `make -C source -j8`: Build the project
+- `make -j8`: Build the project
 - `make clean`: Cleans the project files (but not the dependencies).
 - `make mrproper`: Cleans the project files and the dependencies.
 
-Output folder will be there: out/
+Output folder will be there: `out/`
 For an in-depth explanation of how sys-con works, see [here](source).
 
 ### Debug the application
-- All crash reports goes to /atmosphere/fatal_errors/report_xxxxx.bin (e6)
-- All logs goes to /config/sys-con/log.log
-
+In order to debug the applicaiton, you can directly refer to the logs available there: `/config/sys-con/log.log`.
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/o0Zzz)

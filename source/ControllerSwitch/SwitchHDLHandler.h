@@ -28,6 +28,8 @@ public:
     HiddbgHdlsState m_hdlState;
     HidVibrationDeviceHandle m_vibrationDeviceHandle;
     HidVibrationValue m_vibrationLastValue;
+    bool m_is_connected;
+    bool m_is_sync;
 };
 
 class SwitchHDLHandler : public SwitchVirtualGamepadHandler
@@ -48,7 +50,7 @@ public:
     virtual void Exit() override;
 
     // This will be called periodically by the input threads
-    virtual void UpdateInput() override;
+    virtual void UpdateInput(s32 timeout_us) override;
     // This will be called periodically by the output threads
     virtual void UpdateOutput() override;
 
