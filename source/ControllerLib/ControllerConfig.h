@@ -27,7 +27,8 @@ enum ControllerButton
     CAPTURE,
     HOME,
 
-    COUNT
+    COUNT,
+    NONE
 };
 
 union RGBAColor
@@ -73,6 +74,7 @@ class ControllerConfig
 public:
     std::string driver;
     std::string profile;
+    HidDeviceType controllerType{HidDeviceType_FullKey15};
 
     uint8_t stickDeadzonePercent[MAX_JOYSTICKS]{0};
     uint8_t triggerDeadzonePercent[MAX_TRIGGERS]{0};
@@ -81,7 +83,8 @@ public:
     ControllerStickConfig stickConfig[MAX_JOYSTICKS];
     ControllerAnalogConfig triggerConfig[MAX_TRIGGERS];
 
-    bool simulateHomeFromPlusMinus{false};
+    ControllerButton simulateHome[2]{ControllerButton::NONE};
+    ControllerButton simulateCapture[2]{ControllerButton::NONE};
 
     RGBAColor bodyColor{0, 0, 0, 255};
     RGBAColor buttonsColor{0, 0, 0, 255};
