@@ -1,5 +1,5 @@
 {
 	"name": "유선 컨트롤러 연결",
 	"tid": "690000000000000D",
-	"requires_reboot": false
+	"requires_reboot": true
 }
