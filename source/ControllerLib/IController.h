@@ -3,6 +3,7 @@
 #include "ILogger.h"
 #include "ControllerTypes.h"
 #include "ControllerConfig.h"
+#include "ControllerResult.h"
 
 struct NormalizedStick
 {
@@ -24,17 +25,17 @@ protected:
     ControllerConfig m_config;
     std::unique_ptr<ILogger> m_logger;
 
-    void LogPrint(LogLevel lvl, const char *format, ...)
+    void Log(LogLevel lvl, const char *format, ...)
     {
         ::std::va_list vl;
         va_start(vl, format);
-        m_logger->Print(lvl, format, vl);
+        m_logger->Log(lvl, format, vl);
         va_end(vl);
     }
 
     void LogBuffer(LogLevel lvl, const uint8_t *buffer, size_t size)
     {
-        m_logger->PrintBuffer(lvl, buffer, size);
+        m_logger->LogBuffer(lvl, buffer, size);
     }
 
 public:
@@ -45,15 +46,15 @@ public:
     }
     virtual ~IController() = default;
 
-    virtual ams::Result Initialize() = 0;
+    virtual ControllerResult Initialize() = 0;
     virtual void Exit() = 0;
 
     virtual uint16_t GetInputCount() = 0;
-    virtual ams::Result ReadInput(NormalizedButtonData *normalData, uint16_t *input_idx, uint32_t timeout_us) = 0;
+    virtual ControllerResult ReadInput(NormalizedButtonData *normalData, uint16_t *input_idx, uint32_t timeout_us) = 0;
 
     virtual bool Support(ControllerFeature aFeature) = 0;
 
-    virtual ams::Result SetRumble(uint16_t input_idx, float amp_high, float amp_low) = 0;
+    virtual ControllerResult SetRumble(uint16_t input_idx, float amp_high, float amp_low) = 0;
 
     virtual bool IsControllerConnected(uint16_t input_idx)
     {
