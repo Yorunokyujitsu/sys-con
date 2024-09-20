@@ -36,21 +36,16 @@ ControllerResult Dualshock3Controller::OpenInterfaces()
     return CONTROLLER_STATUS_SUCCESS;
 }
 
-ControllerResult Dualshock3Controller::ReadRawInput(RawInputData *rawData, uint16_t *input_idx, uint32_t timeout_us)
+ControllerResult Dualshock3Controller::ParseData(uint8_t *buffer, size_t size, RawInputData *rawData, uint16_t *input_idx)
 {
-    uint8_t input_bytes[CONTROLLER_INPUT_BUFFER_SIZE];
-    size_t size = sizeof(input_bytes);
+    (void)input_idx;
+    Dualshock3ButtonData *buttonData = reinterpret_cast<Dualshock3ButtonData *>(buffer);
 
-    ControllerResult result = m_inPipe[0]->Read(input_bytes, &size, timeout_us);
-    if (result != CONTROLLER_STATUS_SUCCESS)
-        return result;
+    if (size < sizeof(Dualshock3ButtonData))
+        return CONTROLLER_STATUS_UNEXPECTED_DATA;
 
-    *input_idx = 0;
-
-    if (input_bytes[0] == Ds3InputPacket_Button)
+    if (buttonData->type == Ds3InputPacket_Button)
     {
-        Dualshock3ButtonData *buttonData = reinterpret_cast<Dualshock3ButtonData *>(input_bytes);
-
         rawData->buttons[1] = buttonData->button1;
         rawData->buttons[2] = buttonData->button2;
         rawData->buttons[3] = buttonData->button3;
@@ -65,18 +60,17 @@ ControllerResult Dualshock3Controller::ReadRawInput(RawInputData *rawData, uint1
         rawData->buttons[12] = buttonData->button12;
         rawData->buttons[13] = buttonData->button13;
 
-        rawData->Rx = BaseController::Normalize(buttonData->Rx, 0, 255);
-        rawData->Ry = BaseController::Normalize(buttonData->Ry, 0, 255);
+        rawData->analog[ControllerAnalogType_Rx] = BaseController::Normalize(buttonData->Rx, 0, 255);
+        rawData->analog[ControllerAnalogType_Ry] = BaseController::Normalize(buttonData->Ry, 0, 255);
+        rawData->analog[ControllerAnalogType_X] = BaseController::Normalize(buttonData->X, 0, 255);
+        rawData->analog[ControllerAnalogType_Y] = BaseController::Normalize(buttonData->Y, 0, 255);
+        rawData->analog[ControllerAnalogType_Z] = BaseController::Normalize(buttonData->Z, 0, 255);
+        rawData->analog[ControllerAnalogType_Rz] = BaseController::Normalize(buttonData->Rz, 0, 255);
 
-        rawData->X = BaseController::Normalize(buttonData->X, 0, 255);
-        rawData->Y = BaseController::Normalize(buttonData->Y, 0, 255);
-        rawData->Z = BaseController::Normalize(buttonData->Z, 0, 255);
-        rawData->Rz = BaseController::Normalize(buttonData->Rz, 0, 255);
-
-        rawData->dpad_up = buttonData->dpad_up;
-        rawData->dpad_right = buttonData->dpad_right;
-        rawData->dpad_down = buttonData->dpad_down;
-        rawData->dpad_left = buttonData->dpad_left;
+        rawData->buttons[DPAD_UP_BUTTON_ID] = buttonData->dpad_up;
+        rawData->buttons[DPAD_RIGHT_BUTTON_ID] = buttonData->dpad_right;
+        rawData->buttons[DPAD_DOWN_BUTTON_ID] = buttonData->dpad_down;
+        rawData->buttons[DPAD_LEFT_BUTTON_ID] = buttonData->dpad_left;
 
         return CONTROLLER_STATUS_SUCCESS;
     }

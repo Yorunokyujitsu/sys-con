@@ -8,7 +8,7 @@ Sys-con is a Nintendo Switch module that adds support for all HID and XID joysti
 Only **USB** connection is supported (For Bluetooth connection prefer to use ndeadly's [MissionControl](https://github.com/ndeadly/MissionControl))
 
 ## Installation
-Download the latest zip from the [releases page](https://github.com/o0zz/sys-con/releases). Extract it to your SD card and boot/reboot your switch.
+Download the latest zip from the [releases page](https://github.com/o0zz/sys-con/releases). Extract it to your SD card root folder and boot/reboot your switch.
 
 ## Configuration
 sys-con comes with a configuration folder located in `/config/sys-con/`. It contains configuration for controllers (Button mappings, sticks configuration, triggers configuration, deadzones...).
@@ -60,7 +60,7 @@ A complete list of tested controller is available
 
 ## Configure a controller
 When a new controller is connected, sys-con tries to determine the best profile for this new controller.
-In most cases the arrows and joystick will work fine, the buttons may not be mapped correctly by default (and in rare cases the right stick may be reversed). If this is the case, you will need to map the buttons yourself using the procedure below:
+In most cases the dpad and joystick will work fine, the buttons may not be mapped correctly by default (and in rare cases the right stick may be reversed or not working). If this is the case, you will need to map the buttons yourself using the procedure below:
 
 ### Method 1 (Directly from the switch)
 
@@ -85,8 +85,10 @@ minus=9
 plus=10
 home=11
 capture=12
-right_stick_x=Z
-right_stick_y=Rz
+rstick_left=-Rz
+rstick_right=+Rz
+rstick_up=+Z
+rstick_down=-Z
 ``` 
 Where ButtonName (A, B, Y, X ...) need to be assign to a ButtonID (1,2,3,4,5 ...)
 Now, according to what you found in step 2, you need to match ButtonName with ButtonID.
@@ -120,11 +122,68 @@ minus=9
 plus=10
 home=11
 capture=12
-right_stick_x=Z
-right_stick_y=Rz
+rstick_left=-Z
+rstick_right=+Z
+rstick_up=+Rz
+rstick_down=-Rz
 ```
 Where ButtonID (1,2,3,4, ...) is the key ID noted in step 7.
 Note: Depending to the controller, this windows procedure might not works. If the mapping is incorrect, switch to Method 1
+
+### Button mapping
+
+List of possible mappable switch buttons:
+```
+lstick_left=
+lstick_right=
+lstick_up=
+lstick_down=
+rstick_left=
+rstick_right=
+rstick_up=
+rstick_down=
+B=
+A=
+Y=
+X=
+L=
+R=
+ZL=
+ZR=
+minus=
+plus=
+lstick_click=
+rstick_click=
+dpad_up=
+dpad_down=
+dpad_left=
+dpad_right=
+capture=
+home=
+simulate_home=
+simulate_capture=
+```
+
+List of possible values:
+
+ - **1 to 31**: Represent the Button ID of the controller
+ - **Z, -Z, Rz, -Rz, Rx, -Rx, Ry, -Ry, Slider, -Slider, Dial, -Dial**: Repesent the analog part of the controller (Joystick, ...)
+ - **32 to 35**: Represent the hat switch of the controller (Most of the time equivalent to dpad) - 32, 33, 34, 35 represent dpad_up, dpad_down, dpad_left, dpad_right
+
+### Deadzone
+
+Additionnaly to these mappings, you can configure deadzone for every analog: 
+```
+deadzone_x=20
+deadzone_y=20
+deadzone_z=20
+deadzone_rz=20
+deadzone_rx=5
+deadzone_ry=5
+deadzone_slider=20
+deadzone_dial=20
+```
+All values are in percentages
 
 ## Troubleshooting
 For common issues a troubleshooting guide is available: [Troubleshooting](https://github.com/o0Zz/sys-con/blob/master/doc/Troubleshooting.md)

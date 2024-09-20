@@ -43,44 +43,34 @@ void Xbox360WirelessController::CloseInterfaces()
     BaseController::CloseInterfaces();
 }
 
-ControllerResult Xbox360WirelessController::ReadRawInput(RawInputData *rawData, uint16_t *input_idx, uint32_t timeout_us)
+ControllerResult Xbox360WirelessController::ParseData(uint8_t *buffer, size_t size, RawInputData *rawData, uint16_t *input_idx)
 {
-    uint8_t input_bytes[CONTROLLER_INPUT_BUFFER_SIZE];
-    size_t size = sizeof(input_bytes);
-
-    uint16_t controller_idx = m_current_controller_idx;
-    m_current_controller_idx = (m_current_controller_idx + 1) % XBOX360_MAX_INPUTS;
-
-    ControllerResult result = m_inPipe[controller_idx]->Read(input_bytes, &size, timeout_us);
-    if (result != CONTROLLER_STATUS_SUCCESS)
-        return result;
-
-    Xbox360ButtonData *buttonData = reinterpret_cast<Xbox360ButtonData *>(input_bytes);
-
-    *input_idx = controller_idx;
-
     // https://github.com/xboxdrv/xboxdrv/blob/stable/src/xbox360_controller.cpp
     // https://github.com/felis/USB_Host_Shield_2.0/blob/master/XBOXRECV.cpp
 
-    if (input_bytes[0] & 0x08) // Connect/Disconnect
+    if (buffer[0] & 0x08) // Connect/Disconnect
     {
-        bool is_connected = (input_bytes[1] & 0x80) != 0;
+        bool is_connected = (buffer[1] & 0x80) != 0;
 
-        if (m_is_connected[controller_idx] != is_connected)
+        if (m_is_connected[*input_idx] != is_connected)
         {
             if (is_connected)
-                OnControllerConnect(controller_idx);
+                OnControllerConnect(*input_idx);
             else
-                OnControllerDisconnect(controller_idx);
+                OnControllerDisconnect(*input_idx);
         }
+
+        return CONTROLLER_STATUS_NOTHING_TODO;
     }
-    else if (input_bytes[0] == 0x00 && input_bytes[1] == 0x01 && input_bytes[2] == 0x00 && input_bytes[3] == 0xf0)
+
+    if (buffer[0] == 0x00 && buffer[1] == 0x01 && buffer[2] == 0x00 && buffer[3] == 0xf0) // Controller Data
     {
-        buttonData = reinterpret_cast<Xbox360ButtonData *>(input_bytes + 4);
+        Xbox360ButtonData *buttonData = reinterpret_cast<Xbox360ButtonData *>(buffer + 4);
+        if (size < sizeof(Xbox360ButtonData))
+            return CONTROLLER_STATUS_UNEXPECTED_DATA;
 
         if (buttonData->type == XBOX360INPUT_BUTTON) // Button data
         {
-
             rawData->buttons[1] = buttonData->button1;
             rawData->buttons[2] = buttonData->button2;
             rawData->buttons[3] = buttonData->button3;
@@ -93,18 +83,17 @@ ControllerResult Xbox360WirelessController::ReadRawInput(RawInputData *rawData, 
             rawData->buttons[10] = buttonData->button10;
             rawData->buttons[11] = buttonData->button11;
 
-            rawData->Rx = BaseController::Normalize(buttonData->Rx, 0, 255);
-            rawData->Ry = BaseController::Normalize(buttonData->Ry, 0, 255);
+            rawData->analog[ControllerAnalogType_Rx] = BaseController::Normalize(buttonData->Rx, 0, 255);
+            rawData->analog[ControllerAnalogType_Ry] = BaseController::Normalize(buttonData->Ry, 0, 255);
+            rawData->analog[ControllerAnalogType_X] = BaseController::Normalize(buttonData->X, -32768, 32767);
+            rawData->analog[ControllerAnalogType_Y] = BaseController::Normalize(-buttonData->Y, -32768, 32767);
+            rawData->analog[ControllerAnalogType_Z] = BaseController::Normalize(buttonData->Z, -32768, 32767);
+            rawData->analog[ControllerAnalogType_Rz] = BaseController::Normalize(-buttonData->Rz, -32768, 32767);
 
-            rawData->X = BaseController::Normalize(buttonData->X, -32768, 32767);
-            rawData->Y = BaseController::Normalize(-buttonData->Y, -32768, 32767);
-            rawData->Z = BaseController::Normalize(buttonData->Z, -32768, 32767);
-            rawData->Rz = BaseController::Normalize(-buttonData->Rz, -32768, 32767);
-
-            rawData->dpad_up = buttonData->dpad_up;
-            rawData->dpad_right = buttonData->dpad_right;
-            rawData->dpad_down = buttonData->dpad_down;
-            rawData->dpad_left = buttonData->dpad_left;
+            rawData->buttons[DPAD_UP_BUTTON_ID] = buttonData->dpad_up;
+            rawData->buttons[DPAD_RIGHT_BUTTON_ID] = buttonData->dpad_right;
+            rawData->buttons[DPAD_DOWN_BUTTON_ID] = buttonData->dpad_down;
+            rawData->buttons[DPAD_LEFT_BUTTON_ID] = buttonData->dpad_left;
 
             return CONTROLLER_STATUS_SUCCESS;
         }

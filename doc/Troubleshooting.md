@@ -6,25 +6,28 @@ This means, if you see that your controller works partially (stick/joystick work
 See the [README](https://github.com/o0Zz/sys-con?tab=readme-ov-file#configure-a-controller) for more details.
 
 ## My controller right sticks axis are reversed. (X and Y are reversed)
-If your right joystick doesn't behave as it should (for example, you press up and it goes right)
+If your right joystick doesn't behave as it should (for example, you press up and it goes right) - Or don't works at all.
 This means you need to map your joystick as well.
 See the [README](https://github.com/o0Zz/sys-con?tab=readme-ov-file#configure-a-controller) 
 
-And especially these 2 values:
+And especially these values:
 ```
 [vid-pid]
-right_stick_x=Z
-right_stick_y=Rz
+rstick_left=-Z
+rstick_right=+Z
+rstick_up=+Rz
+rstick_down=-Rz
 ```
-Where right_stick_x and right_stick_y could be: Z, -Z, Rz, -Rz, Rx, -Rx, Ry, -Ry (try all combinations to find the right one)
+Where rstick_xxxx could be: Z, -Z, Rz, -Rz, Rx, -Rx, Ry, -Ry, Slider, -Slider, Dial, -Dial (try all combinations to find the right one)
 
 ## My XBOX One S/X controller is not detected
 This usually happens when you try to start the controller (press the XBOX button) when the USB is already connected to the switch.
 Try the following procedure:
-    1. Disconnect the controller from the switch
-    2. Shut down the controller
-    3. Power on the controller
-    4. Connect the controller to the switch (make sure the switch is set to wake up).
+
+1. Disconnect the controller from the switch
+2. Shut down the controller
+3. Power on the controller
+4. Connect the controller to the switch (make sure the switch is set to wake up).
 
 ## I got error: "Failed to acquire USB interface - Error: 0x25A8C ..."
 This error occur when two drivers try to acquire the controller.
@@ -48,6 +51,12 @@ simulate_home=plus+dpad_up
 simulate_capture=plus+dpad_down
 ```
 
+## My XBOX360 wireless controller with USB cable is not detected 
+The Xbox 360 Wireless Controller USB cable supplies power to the controller, not USB data.
+That's why it's not detected. It will behave the same way on your PC.
+To use an XBOX360 wireless controller with the switch, you need to buy this adapter (or equivalent)
+https://www.amazon.com/Mcbazel-Wireless-Receiver-Microsoft-Xbox-360/dp/B076GZFLR3/
+
 ## My controller don't works at all
 This probably means that your controller is not configure with the correct driver.
 In the `/config/sys-con/config.ini`, you need to find your controller (\[VID/PID\]) and edit the `driver=` key with one of the following:
@@ -56,6 +65,7 @@ In the `/config/sys-con/config.ini`, you need to find your controller (\[VID/PID
  - xbox
  - xboxone
  - dualshock4
+ - switch
 
 Typically, if you know your controller is an xboxone controller, just add
 ```
@@ -89,18 +99,26 @@ x=13,2
 ```
 
 ## I want to bind a button to dpad or stick
-It's possible to map a button (Example: X) to dpad/sticks/... (Example: dpad_up, rstick_up):
+It's possible to map a button (Example: A) to dpad/sticks/...
 
 ```
 [vid-pid]
-x=dpad_up
+a=32
 ```
-
-It's also possible to combinate alias and controller button:
+Note: 32 is a magic value representing dpad_up
 
 ```
 [vid-pid]
-x=13,2,dpad_up
+zr=X
+zl=-X
+```
+Note: The button is considered pressed only on positive value.
+
+It's also possible to combinate analog and controller button:
+
+```
+[vid-pid]
+x=13,2,+X
 ```
 
 ## My controller is not working or not discovered. I don't know what todo
@@ -109,33 +127,38 @@ Enable logs in Trace mode (https://github.com/o0Zz/sys-con?tab=readme-ov-file#lo
 A typically working flow will look like:
 
 ```
-|I|00:03:46.0125| New USB device detected, checking for controllers ...
-|I|00:03:46.0144| Trying to initialize USB device: [12bd-e002] ...
-|D|00:03:46.0161| Loading controller config: 'sdmc:///config/sys-con/config.ini' (default) ...
-|D|00:03:46.0331| Loading controller config: 'sdmc:///config/sys-con/config.ini' (12bd-e002) ...
-|D|00:03:46.0510| Loading controller successfull (B=3, A=2, Y=4, X=1, ...)
-|I|00:03:46.0524| Initializing Generic controller for [12bd-e002] ...
-|D|00:03:46.0540| BaseController Created for 12bd-e002
-|D|00:03:46.0556| GenericHIDController Created for 12bd-e002
-|D|00:03:46.0571| SwitchHDLHandler Initializing ...
-|D|00:03:46.0581| GenericHIDController Initializing ...
-|D|00:03:46.0596| BaseController Initializing ...
-|D|00:03:46.0610| BaseController Opening interfaces ...
-|D|00:03:46.0626| BaseController Opening interface 0 ...
-|D|00:03:46.0640| SwitchUSBInterface(12bd-e002) Openning ...
-|D|00:03:46.0655| SwitchUSBInterface(12bd-e002) Input endpoint found 0x81 (Idx: 0)
-|D|00:03:46.0665| SwitchUSBEndpoint Opening 0x81 (Pkt size: 7)...
-|D|00:03:46.0679| SwitchUSBEndpoint successfully opened!
-|I|00:03:46.0693| BaseController successfully opened !
-|D|00:03:46.0709| SwitchUSBInterface(12bd-e002) ControlTransferInput (bmRequestType=0x81, bmRequest=0x06, wValue=0x2200, wIndex=0x0000, wLength=512)...
-|D|00:03:46.0726| GenericHIDController Parsing descriptor ...
-|D|00:03:46.0743| GenericHIDController Looking for joystick/gamepad profile ...
-|I|00:03:46.0753| GenericHIDController USB joystick successfully opened (1 inputs detected) !
-|D|00:03:46.0765| SwitchHDLHandler Initializing HDL state ...
-|D|00:03:46.0780| SwitchHDLHandler Initializing HDL device idx: 0 ...
-|D|00:03:46.0792| SwitchHDLHandler HDL state successfully initialized !
-|D|00:03:46.0806| SwitchVirtualGamepadHandler InputThreadLoop running ...
-|D|00:03:46.0821| SwitchHDLHandler Initialized !
+|I|00:00:08.362|5E953330| -----------------------------------------------------
+|I|00:00:08.383|5E953330| SYS-CON started 1.3.0+6-411aff0 (Build date: Aug 26 2024 22:22:53)
+|I|00:00:08.397|5E953330| OS version: 17.0.1 (Built with Atmosphere 1.7.x-0e4ac884)
+|D|00:00:08.572|5E953330| Initializing controllers ...
+|D|00:00:08.590|5E953330| Polling frequency: 500 ms
+|D|00:00:08.606|5E953330| Initializing USB stack ...
+|I|00:00:08.625|5E953330| USB configuration: Discovery mode(0), Auto add controller(true)
+|D|00:00:08.649|5E953330| Adding event with filter: XBOX (1/3)...
+|D|00:00:08.664|5E953330| Adding event with filter: USB_CLASS_HID (2/3)...
+|D|00:00:08.679|5E953330| Initializing power supply managment ...
+|D|00:00:08.719|5E94C0D0| New USB device detected (Or polling timeout), checking for controllers ...
+|D|00:00:08.930|5E94C0D0| No HID or XBOX interfaces found !
+|D|00:00:36.401|5E94C0D0| New USB device detected (Or polling timeout), checking for controllers ...
+|I|00:00:36.417|5E94C0D0| Trying to initialize USB device: [057e-2009] (Class: 0x00, SubClass: 0x00, Protocol: 0x00, bcd: 0x0200)...
+|D|00:00:36.434|5E94C0D0| Loading controller config: 'sdmc:/config/sys-con/config.ini' [default] ...
+|D|00:00:36.723|5E94C0D0| Loading controller config: 'sdmc:/config/sys-con/config.ini' [057e-2009] ...
+|D|00:00:37.013|5E94C0D0| Loading controller config: 'sdmc:/config/sys-con/config.ini' (Profile: [switch]) ... 
+|I|00:00:37.572|5E94C0D0| Controller successfully loaded (B=3, A=4, Y=1, X=2, ...) !
+|I|00:00:37.589|5E94C0D0| Initializing Switch (Interface count: 1) ...
+|D|00:00:37.603|5E94C0D0| Controller[057e-2009] Created !
+|D|00:00:37.618|5E94C0D0| SwitchHDLHandler[057e-2009] Initializing ...
+|D|00:00:37.630|5E94C0D0| Controller[057e-2009] Initializing ...
+|D|00:00:37.647|5E94C0D0| Controller[057e-2009] Opening interfaces ...
+|D|00:00:37.685|5E94C0D0| Controller[057e-2009] Opening interface idx=0 ...
+|D|00:00:37.703|5E94C0D0| SwitchUSBInterface[057e-2009] Openning ...
+|D|00:00:37.719|5E94C0D0| SwitchUSBInterface[057e-2009] Input endpoint found 0x81 (Idx: 0)
+|D|00:00:37.730|5E94C0D0| SwitchUSBInterface[057e-2009] Output endpoint found 0x1 (Idx: 0)
+|D|00:00:37.745|5E94C0D0| SwitchUSBEndpoint Opening 0x81 (Pkt size: 64)...
+|D|00:00:37.767|5E94C0D0| SwitchUSBEndpoint successfully opened!
+|D|00:00:37.785|5E94C0D0| SwitchUSBEndpoint Opening 0x1 (Pkt size: 64)...
+|D|00:00:37.800|5E94C0D0| SwitchUSBEndpoint successfully opened!
+|D|00:00:37.813|5E94C0D0| Controller[057e-2009] successfully opened !
 ```
 
 Search for logs starting with `|E|`, If you find one, this is an error and it might give you a hint about the issue.
